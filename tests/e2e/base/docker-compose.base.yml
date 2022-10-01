@@ -20,6 +20,9 @@ services:
   oap:
     image: ghcr.io/apache/skywalking/oap:${SW_OAP_COMMIT}
     # Python agent supports gRPC/ HTTP/ Kafka reporting
+    volumes:
+      - ./tmp/python.yaml:/skywalking/config/meter-analyzer-config/python.yaml
+      - ./tmp/application.yml:/skywalking/config/application.yml
     expose:
       - 11800 # gRPC
       - 12800 # HTTP
