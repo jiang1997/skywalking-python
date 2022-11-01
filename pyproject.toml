@@ -1,0 +1,127 @@
+[tool.poetry]
+name = "Apache SkyWalking Python Agent"
+version = "0.8.0"
+description = """
+The Python Agent for Apache SkyWalking, which provides the native tracing/metrics/logging abilities for Python projects.
+"""
+license = "Apache-2.0"
+authors = ["Apache Software Foundation <dev@skywalking.apache.org>"]
+maintainers = ["Apache SkyWalking Community <dev@skywalking.apache.org>"]
+readme = "README.md"
+homepage = "https://skywalking.apache.org/"
+repository = "https://github.com/apache/skywalking-python"
+documentation = "https://skywalking.apache.org/docs/skywalking-python/next/readme/"
+keywords = [
+    "skywalking", "tracing", "metrics", "logging",
+    "observability", "distributed-tracing", "apm",
+    "python"
+]
+classifiers=[
+    'License :: OSI Approved :: Apache Software License',
+
+    'Operating System :: OS Independent',
+
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+
+    'Topic :: System :: Monitoring',
+    'Topic :: Software Development',
+]
+#packages = [
+#    { include = '.'},
+#    { exclude = 'tests' }
+#]
+exclude = ['tests']
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/apache/skywalking/issues"
+
+[tool.poetry.scripts]
+sw-python = 'skywalking.bootstrap.cli.sw_python:start'
+
+
+[tool.poetry.extras]
+test=[
+    'testcontainers',
+    'pyyaml',
+    'pytest',
+]
+http= [
+    # https://github.com/apache/skywalking/issues/7282
+    'requests>=2.26.0',
+]
+kafka=[
+    'kafka-python',
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7, <4.0"
+grpcio = '*'
+grpcio-tools = '*'
+packaging = '*'
+wrapt = '*'
+psutil = '*'
+contextvars = "2.4" # ???
+
+[tool.poetry.group.dev.dependencies]
+grpcio = '*'
+grpcio-tools = '*'
+packaging = '*'
+wrapt = '*'
+psutil = '*'
+
+pytest = "*"
+kafka-python = "*"
+requests = "*"
+testcontainers = "3.5.0"
+
+[tool.poetry.group.plugins.dependencies]
+urllib3 = "1.26.7"
+aiohttp = "3.7.4"
+celery = "5.1.2"
+django = "3.2.8"
+elasticsearch = "7.15.1"
+flask = "2.0.2"
+gevent = "21.8.0"
+hug = "2.6.1"
+multidict = "5.2.0"
+pika = "1.2.0"
+protobuf = "3.18.1"
+psycopg = {version = "3.0.1", extras = ["binary"]}
+pymongo = "3.12.0"
+pymysql = "1.0.2"
+pyramid = "2.0"
+pyyaml = "6.0"
+redis = "3.5.3"
+sanic = "21.9.1"
+tornado = "6.1"
+werkzeug = "2.0.2"
+yarl = "1.7.0"
+fastapi = "0.70.1"
+uvicorn = "0.16.0"
+gunicorn = "20.1.0"
+bottle = "0.12.21"
+
+[tool.poetry.group.lint.dependencies]
+flake8 = "^5.0.4"
+unify = "^0.5"
+flynt = "^0.76"
+flake8-quotes = "^3.3.1"
+flake8-use-fstring = "^1.4"
+pep8-naming = "^0.13.2"
+darglint = "^1.8.1"
+flake8-eradicate = "^1.4.0"
+flake8-docstrings = "^1.6.0"
+flake8-bugbear = "^22.9.23"
+flake8-comprehensions = "^3.10.0"
+flake8-2020 = "^1.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

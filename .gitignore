@@ -26,7 +26,7 @@ build/
 dist/
 *.pyc
 /apache_skywalking.egg-info/
-**/venv/
+**/.venv/
 tests/**/requirements.txt
 skywalking/protocol
 .vscode/

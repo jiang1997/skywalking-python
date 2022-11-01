@@ -14,52 +14,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION ?= latest
+VERSION ?= next
 
 # determine host platform
-VENV_DIR = venv
-VENV = $(VENV_DIR)/bin
-ifeq (win32,$(shell python3 -c "import sys; print(sys.platform)"))
-VENV=$(VENV_DIR)/Scripts
+ifeq ($(OS),Windows_NT)
+    detected_OS := Windows
+else
+    detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
 endif
 
-.PHONY: license
+.PHONY: poetry env license setup test clean
 
-$(VENV):
-	python3 -m venv $(VENV_DIR)
-	$(VENV)/python -m pip install --upgrade pip
-	$(VENV)/python -m pip install wheel twine
+poetry:
+ifeq ($(detected_OS),Windows)
+	-powershell (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+	poetry self update
+else
+	-curl -sSL https://install.python-poetry.org | python3 -
+	poetry self update
+endif
 
-setup: $(VENV)
-	$(VENV)/python -m pip install grpcio --ignore-installed
+env: poetry
+	poetry install
+	poetry run pip install --upgrade pip
+
+setup: env
+	poetry run pip install grpcio --ignore-installed
 
 setup-test: setup gen
-	$(VENV)/pip install -e .[test]
+	poetry run pip install -e .[test]
 
-gen: $(VENV)
-	$(VENV)/python -m grpc_tools.protoc --version || $(VENV)/python -m pip install grpcio-tools
-	$(VENV)/python tools/codegen.py
+gen:
+	poetry run grpc_tools.protoc --version || poetry run pip install grpcio-tools
+	poetry run python tools/codegen.py
 
 # flake8 configurations should go to the file setup.cfg
-lint: clean $(VENV)
-	$(VENV)/python -m pip install -r requirements-style.txt
-	$(VENV)/flake8 .
+lint: clean
+	poetry run flake8 .
 
 # used in development
-dev-setup: $(VENV)
-	$(VENV)/python -m pip install -r requirements-style.txt
+dev-setup:
+	poetry run pip install -r requirements-style.txt
 
 dev-check: dev-setup
-	$(VENV)/flake8 .
+	poetry run flake8 .
 
 # fix problems described in CodingStyle.md - verify outcome with extra care
 dev-fix: dev-setup
-	$(VENV)/isort .
-	$(VENV)/unify -r --in-place .
-	$(VENV)/flynt -tc -v .
+	poetry run isort .
+	poetry run unify -r --in-place .
+	poetry run flynt -tc -v .
 
 doc-gen: $(VENV) install
-	$(VENV)/python tools/doc/plugin_doc_gen.py
+	poetry run python tools/doc/plugin_doc_gen.py
 
 check-doc-gen: dev-setup doc-gen
 	@if [ ! -z "`git status -s`" ]; then \
@@ -72,22 +79,22 @@ license: clean
 	docker run -it --rm -v $(shell pwd):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:f461a46e74e5fa22e9f9599a355ab4f0ac265469 header check
 
 test: gen setup-test
-	$(VENV)/python -m pytest -v tests
+	poetry run python -m pytest -v tests
 
 # This is intended for GitHub CI only
 test-parallel-setup: gen setup-test
 
 install: gen
-	$(VENV)/python setup.py install --force
+	poetry run python setup.py install --force
 
 package: clean gen
-	$(VENV)/python setup.py sdist bdist_wheel
+	poetry run python setup.py sdist bdist_wheel
 
 upload-test: package
-	$(VENV)/twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	poetry run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
 upload: package
-	$(VENV)/twine upload dist/*
+	poetry run twine upload dist/*
 
 build-image:
 	$(MAKE) -C docker build
