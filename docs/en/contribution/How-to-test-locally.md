@@ -7,7 +7,7 @@ After cloning the repo, make sure you also have cloned the submodule for protoco
 git submodule update --init
 ```
 
-Then run ``make setup-test``. This will create virtual environments for python and generate the protocol folder needed for the agent.
+Then run ``make install``. This will create virtual environments for python and generate the protocol folder needed for the agent.
 
 By now, you can do what you want.
 

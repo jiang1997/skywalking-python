@@ -18,15 +18,15 @@ VERSION ?= next
 
 # determine host platform
 ifeq ($(OS),Windows_NT)
-    detected_OS := Windows
+    OS := Windows
 else
-    detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
+    OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
 endif
 
-.PHONY: poetry env license setup test clean
+.PHONY: poetry poetry-ci
 
 poetry:
-ifeq ($(detected_OS),Windows)
+ifeq ($(OS),Windows)
 	-powershell (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
 	poetry self update
 else
@@ -34,74 +34,92 @@ else
 	poetry self update
 endif
 
+poetry-ci:
+	export POETRY_HOME=/opt/poetry
+	curl -sSL https://install.python-poetry.org | python3 -
+	$POETRY_HOME/bin/poetry self update
+
+.PHONY: env
 env: poetry
 	poetry install
 	poetry run pip install --upgrade pip
 
-setup: env
-	poetry run pip install grpcio --ignore-installed
-
-setup-test: setup gen
-	poetry run pip install -e .[test]
-
+.PHONY: gen
 gen:
-	poetry run grpc_tools.protoc --version || poetry run pip install grpcio-tools
-	poetry run python tools/codegen.py
+	poetry run python3 -m grpc_tools.protoc --version || poetry run python3 -m pip install grpcio-tools
+	poetry run python3 tools/codegen.py
 
+.PHONY: gen-basic
+gen-basic:
+	-poetry --version
+	python3 -m grpc_tools.protoc --version || python3 -m pip install grpcio-tools
+	python3 tools/codegen.py
+
+.PHONY: lint
 # flake8 configurations should go to the file setup.cfg
 lint: clean
+	poetry install --only lint
 	poetry run flake8 .
 
-# used in development
-dev-setup:
-	poetry run pip install -r requirements-style.txt
-
-dev-check: dev-setup
-	poetry run flake8 .
-
+.PHONY: fix
 # fix problems described in CodingStyle.md - verify outcome with extra care
-dev-fix: dev-setup
+fix:
 	poetry run isort .
 	poetry run unify -r --in-place .
 	poetry run flynt -tc -v .
 
-doc-gen: $(VENV) install
-	poetry run python tools/doc/plugin_doc_gen.py
+.PHONY: doc-gen
+doc-gen: env gen
+	poetry run python3 tools/doc/plugin_doc_gen.py
 
-check-doc-gen: dev-setup doc-gen
+.PHONY: check-doc-gen
+check-doc-gen: doc-gen
 	@if [ ! -z "`git status -s`" ]; then \
-		echo "Plugin doc is not consisitent with CI:"; \
+		echo "Plugin doc is not consistent with CI:"; \
 		git status -s; \
 		exit 1; \
 	fi
 
+.PHONY: license
 license: clean
-	docker run -it --rm -v $(shell pwd):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:f461a46e74e5fa22e9f9599a355ab4f0ac265469 header check
+	docker run -it --rm -v $(shell pwd):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:20da317d1ad158e79e24355fdc28f53370e94c8a header check
 
-test: gen setup-test
-	poetry run python -m pytest -v tests
+.PHONY: test
+test: env
+	poetry run python3 -m pytest -v tests
 
 # This is intended for GitHub CI only
-test-parallel-setup: gen setup-test
+.PHONY: test-parallel-setup
+test-parallel-setup: env gen install
 
-install: gen
-	poetry run python setup.py install --force
 
+.PHONY: install
+install: gen-basic
+	python3 -m pip install --upgrade pip
+	python3 -m pip install .
+
+.PHONY: package
 package: clean gen
-	poetry run python setup.py sdist bdist_wheel
+	poetry build
 
+.PHONY: upload-test
 upload-test: package
 	poetry run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
+.PHONY: upload
 upload: package
 	poetry run twine upload dist/*
 
+.PHONY: build-image
 build-image:
 	$(MAKE) -C docker build
 
+.PHONY: push-image
 push-image:
 	$(MAKE) -C docker push
 
+.PHONY: clean
+# FIXME change to python based so we can run on windows
 clean:
 	rm -rf skywalking/protocol
 	rm -rf apache_skywalking.egg-info dist build
@@ -110,7 +128,8 @@ clean:
 	find . -name ".pytest_cache" -exec rm -r {} +
 	find . -name "*.pyc" -exec rm -r {} +
 
+.PHONY: release
 release: clean lint license
-	-tar -zcvf skywalking-python-src-$(VERSION).tgz --exclude venv *
+	-tar -zcvf skywalking-python-src-$(VERSION).tgz --exclude .venv *
 	gpg --batch --yes --armor --detach-sig skywalking-python-src-$(VERSION).tgz
 	shasum -a 512 skywalking-python-src-$(VERSION).tgz > skywalking-python-src-$(VERSION).tgz.sha512

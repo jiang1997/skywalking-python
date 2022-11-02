@@ -40,5 +40,5 @@ take this [test](https://github.com/apache/skywalking-python/blob/master/tests/p
 
 ## Notes
 
-Remember to add the library/module into the `setup.py` - `extras_require/test` 
+Remember to add the library/module through `poetry add lib` and `poetry lock`,
 so that other developers can have it installed after pulling your commits, and run tests locally.

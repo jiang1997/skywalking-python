@@ -42,7 +42,9 @@ jobs:
       - name: Check License
         uses: apache/skywalking-eyes/header@501a28d2fb4a9b962661987e50cf0219631b32ff
       - name: Lint codes
-        run: make lint
+        run: |
+          make poetry
+          make lint
 
   # Check if the plugin doc is generated correctly 
   plugin-doc-check:
@@ -55,7 +57,9 @@ jobs:
         with:
           submodules: true
       - name: Check plugin doc
-        run: make check-doc-gen
+        run: |
+          make poetry
+          make check-doc-gen
 
   changes:
     # Check if any file related to Agent/ CI behavior is changed
@@ -103,6 +107,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: set-matrix
+        # TODO change to github output
         run: |
           sudo apt-get install jq
           echo "::set-output name=matrix::$(bash tests/gather_test_paths.sh)"
@@ -119,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: # may support pypy in the future
-        python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
       fail-fast: false
     env:
       BASE_PYTHON_IMAGE: ${{ matrix.python-version }}
@@ -151,7 +156,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        python-version: [ "3.6", "3.7", "3.8", "3.9", "3.10" ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
         test-path: ${{fromJson(needs.prep-plugin-and-unit-tests.outputs.matrix)}}
       fail-fast: false
     env:
@@ -175,8 +180,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Run unit tests
         run: |
-          make test-parallel-setup
-          ./venv/bin/python -m pytest -v ${{ matrix.test-path }}
+          make poetry
+          make install
+          poetry run pytest -v ${{ matrix.test-path }}
 
   docker-e2e:
     # build docker image for E2E tests, single Python version for now.
@@ -237,7 +243,7 @@ jobs:
       - name: Load docker images
         run: find docker-images -name "*.tar" -exec docker load -i {} \;
       - name: Setup go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: '1.16'
       - name: Run E2E Tests
@@ -249,7 +255,7 @@ jobs:
         uses: actions/upload-artifact@v3
         if: ${{ failure() }}
         with:
-          name: e2e_logs
+          name: e2e_logs_${{ matrix.case.name }}
           path: "${{ env.SW_INFRA_E2E_LOG_DIR }}"
 
   CheckStatus:

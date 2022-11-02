@@ -2,7 +2,7 @@
 
 <img src="http://skywalking.apache.org/assets/logo.svg" alt="Sky Walking logo" height="90px" align="right" />
 
-**SkyWalking-Python**: The Python Agent for Apache SkyWalking, which provides the native tracing abilities for Python project.
+**SkyWalking-Python**: The Python Agent for Apache SkyWalking provides the native tracing/metrics/logging abilities for Python projects.
 
 **SkyWalking**: an APM(application performance monitor) system, especially designed for
 microservices, cloud native and container-based (Docker, Kubernetes, Mesos) architectures.
