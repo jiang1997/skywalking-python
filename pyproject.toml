@@ -125,6 +125,7 @@ bottle = "0.12.21"
 
 [tool.poetry.group.lint.dependencies]
 flake8 = "^5.0.4"
+# isort = "^5.10.1"
 unify = "^0.5"
 flynt = "^0.76"
 flake8-quotes = "^3.3.1"

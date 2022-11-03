@@ -23,7 +23,7 @@ else
     OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
 endif
 
-.PHONY: poetry poetry-ci
+.PHONY: poetry
 
 poetry:
 ifeq ($(OS),Windows)
@@ -34,11 +34,6 @@ else
 	poetry self update
 endif
 
-poetry-ci:
-	export POETRY_HOME=/opt/poetry
-	curl -sSL https://install.python-poetry.org | python3 -
-	$POETRY_HOME/bin/poetry self update
-
 .PHONY: env
 env: poetry
 	poetry install
@@ -46,30 +41,32 @@ env: poetry
 
 .PHONY: gen
 gen:
-	poetry run python3 -m grpc_tools.protoc --version || poetry run python3 -m pip install grpcio-tools
+	poetry run python3 -m grpc_tools.protoc --version || poetry run pip install grpcio-tools
 	poetry run python3 tools/codegen.py
 
 .PHONY: gen-basic
 gen-basic:
-	-poetry --version
 	python3 -m grpc_tools.protoc --version || python3 -m pip install grpcio-tools
 	python3 tools/codegen.py
+
+.PHONY: install
+install: gen-basic
+	python3 -m pip install --upgrade pip
+	python3 -m pip install .
 
 .PHONY: lint
 # flake8 configurations should go to the file setup.cfg
 lint: clean
-	poetry install --only lint
 	poetry run flake8 .
 
 .PHONY: fix
 # fix problems described in CodingStyle.md - verify outcome with extra care
 fix:
-	poetry run isort .
 	poetry run unify -r --in-place .
 	poetry run flynt -tc -v .
 
 .PHONY: doc-gen
-doc-gen: env gen
+doc-gen: gen
 	poetry run python3 tools/doc/plugin_doc_gen.py
 
 .PHONY: check-doc-gen
@@ -85,18 +82,10 @@ license: clean
 	docker run -it --rm -v $(shell pwd):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:20da317d1ad158e79e24355fdc28f53370e94c8a header check
 
 .PHONY: test
-test: env
-	poetry run python3 -m pytest -v tests
-
-# This is intended for GitHub CI only
-.PHONY: test-parallel-setup
-test-parallel-setup: env gen install
-
-
-.PHONY: install
-install: gen-basic
-	python3 -m pip install --upgrade pip
-	python3 -m pip install .
+test: gen
+	sudo apt-get -y install jq
+	docker build --build-arg BASE_PYTHON_IMAGE=3.7 -t apache/skywalking-python-agent:latest-plugin --no-cache . -f tests/plugin/Dockerfile.plugin
+	poetry run pytest -v $(bash tests/gather_test_paths.sh)
 
 .PHONY: package
 package: clean gen
