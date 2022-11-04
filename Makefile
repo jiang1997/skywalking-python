@@ -34,11 +34,6 @@ else
 	poetry self update
 endif
 
-.PHONY: env
-env: poetry
-	poetry install
-	poetry run pip install --upgrade pip
-
 .PHONY: gen
 gen:
 	poetry run python3 -m grpc_tools.protoc --version || poetry run pip install grpcio-tools
@@ -53,6 +48,12 @@ gen-basic:
 install: gen-basic
 	python3 -m pip install --upgrade pip
 	python3 -m pip install .
+
+.PHONY: env
+env: poetry gen
+	poetry install
+	poetry run pip install --upgrade pip
+
 
 .PHONY: lint
 # flake8 configurations should go to the file setup.cfg
@@ -82,7 +83,7 @@ license: clean
 	docker run -it --rm -v $(shell pwd):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:20da317d1ad158e79e24355fdc28f53370e94c8a header check
 
 .PHONY: test
-test: gen
+test: env
 	sudo apt-get -y install jq
 	docker build --build-arg BASE_PYTHON_IMAGE=3.7 -t apache/skywalking-python-agent:latest-plugin --no-cache . -f tests/plugin/Dockerfile.plugin
 	poetry run pytest -v $(bash tests/gather_test_paths.sh)

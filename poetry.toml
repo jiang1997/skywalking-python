@@ -17,5 +17,5 @@
 [virtualenvs]
 create = true
 in-project = true
-# Below option is experimental : false since it is buggy
+# don't turn on unless python is always available (i.e. alias of python3)
 prefer-active-python = false
