@@ -193,6 +193,12 @@ jobs:
       ((github.event_name == 'schedule' && github.repository == 'apache/skywalking-python') || needs.changes.outputs.agent == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        python-image-variant: [ '3.7', '3.7-slim' ]
+      fail-fast: false
+    env:
+      BASE_PYTHON_IMAGE: ${{ matrix.python-image-variant }}
     steps:
       - name: Checkout source codes
         uses: actions/checkout@v3
@@ -201,7 +207,7 @@ jobs:
       - name: Build SkyWalking Python agent base e2e image
         run: |
           docker build --build-arg BASE_PYTHON_IMAGE -t apache/skywalking-python-agent:latest-e2e --no-cache . -f tests/e2e/base/Dockerfile.e2e
-          docker save -o docker-images-skywalking-python-e2e.tar apache/skywalking-python-agent:latest-e2e
+          docker save -o docker-images-skywalking-python-e2e-${{ matrix.python-image-variant }}.tar apache/skywalking-python-agent:latest-e2e
         env: # may support pypy in the future
           BASE_PYTHON_IMAGE: 3.7
       - name: Upload docker image
@@ -222,6 +228,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
+        python-image-variant: [ '3.7', '3.7-slim' ]
         case:
           - name: gRPC
             path: tests/e2e/case/grpc/e2e.yaml
@@ -238,7 +245,7 @@ jobs:
       - name: Pull SkyWalking Python agent base image
         uses: actions/download-artifact@v3
         with:
-          name: docker-images-skywalking-python-e2e
+          name: docker-images-skywalking-python-e2e-${{ matrix.python-image-variant }}
           path: docker-images
       - name: Load docker images
         run: find docker-images -name "*.tar" -exec docker load -i {} \;
