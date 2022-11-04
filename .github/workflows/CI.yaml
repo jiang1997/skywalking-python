@@ -111,7 +111,7 @@ jobs:
         # TODO change to github output
         run: |
           sudo apt-get install jq
-          echo "::set-output name=matrix::$(bash tests/gather_test_paths.sh)"
+          echo "matrix=$(bash tests/gather_test_paths.sh)" >> $GITHUB_OUTPUT
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
@@ -198,7 +198,7 @@ jobs:
         python-image-variant: [ "3.7", "3.7-slim" ]
       fail-fast: false
     env:
-      BASE_IMAGE_VARIANT: ${{ matrix.python-image-variant }}
+      BASE_PYTHON_IMAGE: ${{ matrix.python-image-variant }}
     steps:
       - name: Checkout source codes
         uses: actions/checkout@v3
@@ -206,8 +206,7 @@ jobs:
           submodules: true
       - name: Build SkyWalking Python agent base e2e image
         run: |
-          echo "Building image with variant $BASE_IMAGE_VARIANT"
-          docker build --build-arg BASE_IMAGE_VARIANT -t apache/skywalking-python-agent:latest-e2e --no-cache . -f tests/e2e/base/Dockerfile.e2e
+          docker build --build-arg BASE_PYTHON_IMAGE -t apache/skywalking-python-agent:latest-e2e --no-cache . -f tests/e2e/base/Dockerfile.e2e
           docker save -o docker-images-skywalking-python-e2e-${{ matrix.python-image-variant }}.tar apache/skywalking-python-agent:latest-e2e
       - name: Upload docker image
         uses: actions/upload-artifact@v3
