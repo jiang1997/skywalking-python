@@ -195,7 +195,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-image-variant: [ '3.7', '3.7-slim' ]
+        python-image-variant: [ "3.7", "3.7-slim" ]
       fail-fast: false
     env:
       BASE_PYTHON_IMAGE: ${{ matrix.python-image-variant }}
@@ -206,6 +206,7 @@ jobs:
           submodules: true
       - name: Build SkyWalking Python agent base e2e image
         run: |
+          echo "Building image with variant $BASE_PYTHON_IMAGE"
           docker build --build-arg BASE_PYTHON_IMAGE -t apache/skywalking-python-agent:latest-e2e --no-cache . -f tests/e2e/base/Dockerfile.e2e
           docker save -o docker-images-skywalking-python-e2e-${{ matrix.python-image-variant }}.tar apache/skywalking-python-agent:latest-e2e
         env: # may support pypy in the future
@@ -228,7 +229,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        python-image-variant: [ '3.7', '3.7-slim' ]
+        python-image-variant: [ "3.7", "3.7-slim" ]
         case:
           - name: gRPC
             path: tests/e2e/case/grpc/e2e.yaml
