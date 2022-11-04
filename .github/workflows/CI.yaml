@@ -115,74 +115,74 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
 
-#  docker-plugin:
-#    # build docker image for plugin tests, with matrix of Python versions
-#    name: Construct Agent Plugin Test Images
-#    needs: [ license-and-lint, changes, plugin-doc-check, prep-plugin-and-unit-tests ]
-#    if: |
-#      always() &&
-#      ((github.event_name == 'schedule' && github.repository == 'apache/skywalking-python') || needs.changes.outputs.agent == 'true')
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix: # may support pypy in the future
-#        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
-#      fail-fast: false
-#    env:
-#      BASE_PYTHON_IMAGE: ${{ matrix.python-version }}
-#    steps:
-#      - name: Checkout source codes
-#        uses: actions/checkout@v3
-#        with:
-#          submodules: true
-#      - name: Build SkyWalking Python agent base plugin image
-#        run: |
-#          docker build --build-arg BASE_PYTHON_IMAGE -t apache/skywalking-python-agent:latest-plugin --no-cache . -f tests/plugin/Dockerfile.plugin
-#          docker save -o docker-images-skywalking-python-plugin-${{ matrix.python-version }}.tar apache/skywalking-python-agent:latest-plugin
-#      - name: Upload docker image with specific python version
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: docker-images-skywalking-python-plugin-${{ matrix.python-version }}
-#          path: docker-images-skywalking-python-plugin-${{ matrix.python-version }}.tar
-#          retention-days: 1
-#
-#  plugin-and-unit-tests:
-#    # Execute plugin tests with matrix of Python versions and matrix of cases
-#    # this step is only run after passing building images + prep matrix + changes
-#    name: Execute Agent Plugin and Unit Tests
-#    needs: [ license-and-lint, changes, plugin-doc-check, docker-plugin, prep-plugin-and-unit-tests ]
-#    if: |
-#      always() &&
-#      ((github.event_name == 'schedule' && github.repository == 'apache/skywalking-python') || needs.changes.outputs.agent == 'true')
-#    runs-on: ubuntu-latest
-#    timeout-minutes: 30
-#    strategy:
-#      matrix:
-#        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
-#        test-path: ${{fromJson(needs.prep-plugin-and-unit-tests.outputs.matrix)}}
-#      fail-fast: false
-#    env:
-#      BASE_PYTHON_IMAGE: ${{ matrix.python-version }}
-#    steps:
-#      - name: Checkout source codes
-#        uses: actions/checkout@v3
-#        with:
-#          submodules: true
-#      - name: Pull SkyWalking Python agent base image
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: docker-images-skywalking-python-plugin-${{ matrix.python-version }}
-#          path: docker-images
-#      - name: Load docker images
-#        run: find docker-images -name "*.tar" -exec docker load -i {} \;
-#      - name: Set up Python ${{ matrix.python-version }}
-#        # This step is crucial for correct plugin matrix in test orchestration
-#        uses: actions/setup-python@v3
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Run unit tests
-#        run: |
-#          make env
-#          poetry run pytest -v ${{ matrix.test-path }}
+  docker-plugin:
+    # build docker image for plugin tests, with matrix of Python versions
+    name: Construct Agent Plugin Test Images
+    needs: [ license-and-lint, changes, plugin-doc-check, prep-plugin-and-unit-tests ]
+    if: |
+      always() &&
+      ((github.event_name == 'schedule' && github.repository == 'apache/skywalking-python') || needs.changes.outputs.agent == 'true')
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: # may support pypy in the future
+        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
+      fail-fast: false
+    env:
+      BASE_PYTHON_IMAGE: ${{ matrix.python-version }}
+    steps:
+      - name: Checkout source codes
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Build SkyWalking Python agent base plugin image
+        run: |
+          docker build --build-arg BASE_PYTHON_IMAGE -t apache/skywalking-python-agent:latest-plugin --no-cache . -f tests/plugin/Dockerfile.plugin
+          docker save -o docker-images-skywalking-python-plugin-${{ matrix.python-version }}.tar apache/skywalking-python-agent:latest-plugin
+      - name: Upload docker image with specific python version
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-images-skywalking-python-plugin-${{ matrix.python-version }}
+          path: docker-images-skywalking-python-plugin-${{ matrix.python-version }}.tar
+          retention-days: 1
+
+  plugin-and-unit-tests:
+    # Execute plugin tests with matrix of Python versions and matrix of cases
+    # this step is only run after passing building images + prep matrix + changes
+    name: Execute Agent Plugin and Unit Tests
+    needs: [ license-and-lint, changes, plugin-doc-check, docker-plugin, prep-plugin-and-unit-tests ]
+    if: |
+      always() &&
+      ((github.event_name == 'schedule' && github.repository == 'apache/skywalking-python') || needs.changes.outputs.agent == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.8", "3.9", "3.10" ]
+        test-path: ${{fromJson(needs.prep-plugin-and-unit-tests.outputs.matrix)}}
+      fail-fast: false
+    env:
+      BASE_PYTHON_IMAGE: ${{ matrix.python-version }}
+    steps:
+      - name: Checkout source codes
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Pull SkyWalking Python agent base image
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-images-skywalking-python-plugin-${{ matrix.python-version }}
+          path: docker-images
+      - name: Load docker images
+        run: find docker-images -name "*.tar" -exec docker load -i {} \;
+      - name: Set up Python ${{ matrix.python-version }}
+        # This step is crucial for correct plugin matrix in test orchestration
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run unit tests
+        run: |
+          make env
+          poetry run pytest -v ${{ matrix.test-path }}
 
   docker-e2e:
     # build docker image for E2E tests, single Python version for now.
