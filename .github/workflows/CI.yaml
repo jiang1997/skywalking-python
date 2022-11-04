@@ -59,7 +59,7 @@ jobs:
           submodules: true
       - name: Check plugin doc
         run: |
-          make poetry
+          make env
           make check-doc-gen
 
   changes:
