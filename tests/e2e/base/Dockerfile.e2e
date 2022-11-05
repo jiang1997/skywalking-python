@@ -28,7 +28,7 @@ COPY . /skywalking-python/
 RUN cd /skywalking-python && apt-get update && apt-get install -y make && make install
 
 # Extra dependencies for e2e services --- TODO RMEOVE REQUESTS KAFKA-PYTHON
-RUN pip install requests kafka-python fastapi uvicorn aiohttp
+RUN pip install requests kafka-python fastapi uvicorn aiohttp flask
 
 # Entrypoint with agent attached
 Entrypoint ["sw-python", "run"]
