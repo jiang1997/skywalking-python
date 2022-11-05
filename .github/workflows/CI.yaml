@@ -176,9 +176,10 @@ jobs:
         run: find docker-images -name "*.tar" -exec docker load -i {} \;
       - name: Set up Python ${{ matrix.python-version }}
         # This step is crucial for correct plugin matrix in test orchestration
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'poetry'
       - name: Run unit tests
         run: |
           make env
@@ -252,7 +253,7 @@ jobs:
       - name: Load docker images
         run: find docker-images -name "*.tar" -exec docker load -i {} \;
       - name: Run E2E Tests
-        uses: apache/skywalking-infra-e2e@main
+        uses: superskyyy/skywalking-infra-e2e@main
         with:
           log-dir: /tmp/e2e-logs
           e2e-file: ${{ matrix.case.path }}
