@@ -76,7 +76,8 @@ def _sw_send_func(_send):
         # ignore trace & log reporter - skywalking self request
         if config.protocol == 'kafka' and config.kafka_topic_segment == topic \
                 or config.kafka_topic_log == topic \
-                or config.kafka_topic_management == topic:
+                or config.kafka_topic_management == topic \
+                or config.kafka_topic_meter == topic:
             return _send(this, topic, value=value, key=key, headers=headers, partition=partition,
                          timestamp_ms=timestamp_ms)
 
