@@ -47,7 +47,7 @@ gen-basic:
 .PHONY: install
 install: gen-basic
 	python3 -m pip install --upgrade pip
-	python3 -m pip install .
+	python3 -m pip install .[all]
 
 .PHONY: env
 env: poetry gen
