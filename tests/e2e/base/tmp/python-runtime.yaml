@@ -16,21 +16,21 @@
 expSuffix: instance(['service'], ['instance'], Layer.GENERAL)
 metricPrefix: meter
 metricsRules:
-  - name: process_cpu_utilization
-    exp: process_cpu_utilization
-  - name: process_mem_utilization
-    exp: process_mem_utilization
-  - name: total_cpu_utilization
-    exp: total_cpu_utilization
-  - name: total_mem_utilization
-    exp: total_mem_utilization
-  - name: gc_g0
-    exp: gc_g0
-  - name: gc_g1
-    exp: gc_g1
-  - name: gc_g2
-    exp: gc_g2
-  - name: gc_time
-    exp: gc_time
-  - name: thread_active_count
-    exp: thread_active_count
+  - name: instance_pvm_process_cpu_utilization
+    exp: instance_pvm_process_cpu_utilization
+  - name: instance_pvm_process_mem_utilization
+    exp: instance_pvm_process_mem_utilization
+  - name: instance_pvm_total_cpu_utilization
+    exp: instance_pvm_total_cpu_utilization
+  - name: instance_pvm_total_mem_utilization
+    exp: instance_pvm_total_mem_utilization
+  - name: instance_pvm_gc_g0
+    exp: instance_pvm_gc_g0
+  - name: instance_pvm_gc_g1
+    exp: instance_pvm_gc_g1
+  - name: instance_pvm_gc_g2
+    exp: instance_pvm_gc_g2
+  - name: instance_pvm_gc_time
+    exp: instance_pvm_gc_time.increase("PT1M")
+  - name: instance_pvm_thread_active_count
+    exp: instance_pvm_thread_active_count
