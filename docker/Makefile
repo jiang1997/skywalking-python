@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+HUB ?= docker.io/apache
+PROJECT ?= skywalking-python
+
 D := docker
 
 P := grpc http kafka
@@ -57,7 +60,7 @@ $(TARGETS):
 				--build-arg BASE_PYTHON_IMAGE=$(BASE_PYTHON_IMAGE) \
 				--build-arg SW_PYTHON_AGENT_PROTOCOL=$$p \
 				--build-arg SW_PYTHON_AGENT_VERSION=${AGENT_VERSION} \
-				-t apache/skywalking-python:${AGENT_VERSION}-$$p-$@ \
+				-t $(HUB)/$(PROJECT):${AGENT_VERSION}-$$p-$@ \
 				. ; \
 	done
 
@@ -73,7 +76,7 @@ $(PUSH_TARGETS):
 				--build-arg BASE_PYTHON_IMAGE=$(BASE_PYTHON_IMAGE) \
 				--build-arg SW_PYTHON_AGENT_PROTOCOL=$$p \
 				--build-arg SW_PYTHON_AGENT_VERSION=${AGENT_VERSION} \
-				-t apache/skywalking-python:${AGENT_VERSION}-$$p-${version} \
+				-t $(HUB)/$(PROJECT):${AGENT_VERSION}-$$p-${version} \
 				. ; \
 	done
 	docker buildx rm skywalking_python_main || true

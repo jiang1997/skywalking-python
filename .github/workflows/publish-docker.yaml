@@ -23,7 +23,8 @@ on:
       - master
 
 env:
-  HUB: ghcr.io/jiang1997/skywalking-python
+  HUB: ghcr.io/jiang1997
+  PROJECT: skywalking-python
 
 jobs:
   build-docker:
