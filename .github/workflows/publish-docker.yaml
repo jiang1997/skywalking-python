@@ -47,4 +47,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push docker image
         run: |
-          make package || make push-image
+          make env
+          make package
+          make push-image
