@@ -24,12 +24,12 @@ on:
 
 env:
   tag: ${{ github.sha }}
-  HUB: ghcr.io/apache/skywalking-python
+  HUB: ghcr.io/jiang1997/skywalking-python
   PROJECT: skywalking-python
 
 jobs:
   build-docker:
-    if: github.repository == 'apache/skywalking-python'
+    if: github.repository == 'jiang1997/skywalking-python'
     runs-on: ubuntu-latest
     permissions:
       contents: read
