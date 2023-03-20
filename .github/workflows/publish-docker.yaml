@@ -23,6 +23,7 @@ on:
       - master
 
 env:
+  tag: ${{ github.sha }}
   HUB: ghcr.io/apache/skywalking-python
   PROJECT: skywalking-python
 
@@ -48,6 +49,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push docker image
         run: |
-          make env
-          make package
           make push-image
