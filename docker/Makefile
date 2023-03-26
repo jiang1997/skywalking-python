@@ -92,4 +92,4 @@ $(PUSH_TARGETS):
 				-t $(HUB)/$(PROJECT):${AGENT_VERSION}-$$p-${version} \
 				. ; \
 	done
-	# docker buildx rm skywalking_python_main || true;
+	docker buildx rm skywalking_python_main_$(version) || true;
