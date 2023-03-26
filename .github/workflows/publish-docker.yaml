@@ -23,12 +23,12 @@ on:
       - master
 
 env:
-  HUB: ghcr.io/apache/skywalking-python
+  HUB: ghcr.io/jiang1997/skywalking-python
   PROJECT: skywalking-python
 
 jobs:
   build-docker:
-    if: github.repository == 'apache/skywalking-python'
+    if: github.repository == 'jiang1997/skywalking-python'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -48,4 +48,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push docker image
         run: |
-          make push-image -j 10
+          make push-image -j 5
